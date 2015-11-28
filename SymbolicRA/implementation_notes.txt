@@ -1,0 +1,14 @@
+1. The basic command to generate LLVM IR for our analysis is:
+   clang -emit-llvm -c <input file> -o <output file>
+
+2. To generate human readable LLVM IR file, we can use either:
+   clang -emit-llvm -S <input file> -o <output file>
+
+   or first generate .bc file and then use llvm-dis to generate .ll file
+
+3. NOTE that the above commands will generate LLVM IR files which
+   make heavy use of load and store instructions. In order to perform the
+   symbolic range analysis, we need LLVM IR that mostly use registers,
+   instead of load and store instructions. To this end, we need to use
+   opt -mem2reg to transform the .bc file before starting the analysis.
+
