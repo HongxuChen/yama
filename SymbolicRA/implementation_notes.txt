@@ -12,3 +12,6 @@
    instead of load and store instructions. To this end, we need to use
    opt -mem2reg to transform the .bc file before starting the analysis.
 
+4. As suggested by Hongxu, we should be careful with the exact version of
+   LLVM that we are using. Since the current version on SWAG server is 3.6.2,
+   we will refer to the documentations at: http://llvm.org/releases/3.6.2/docs/index.html
