@@ -23,17 +23,49 @@ SymbolicRange computeUseRange(VariableInstance vInst) {
 }
 
 // TODO: implement this function based 
-// on the suppored kinds of instructions 
+// on the supported kinds of instructions 
 // in Figure 3
+// TODO: change the interface to avoid copying vector
 vector<Variable*> extractOperands(Variable * variable) {
+    vector<Variable*> res;
+
+    Value * val = variable->getValue();
+    if (isa<User>(val)) {
+	User * user = dynamic_cast<User*>(val);
+
+	llvm::User::const_op_iterator opIte;
+	for (opIte = user->op_begin(); opIte != user->op_end(); ++opIte) {
+	    res.push_back(new Variable((*opIte)->get()));
+	}
+    }
+
+    return res;
 }
 
 // TODO: implement this function based 
 // on the suppored kinds of predicate 
 // instructions in Figure 4
 vector<Variable*> extractOperands(Predicate * pred) {
+    // if the predicate can be supported 
+    // by the rules in Figure 4
+    return extractOperandsFromInstruction(pred);
 }
 
+// TODO: change the interface to avoid copying vector
+vector<Variable*> extractOperandsFromInstruction(Instruction * instr) {
+    vector<Variable*> res;
+
+    if (isa<User>(instr)) {
+	User * user = dynamic_cast<User*>(instr);
+
+	llvm::User::const_op_iterator opIte;
+	for (opIte = user->op_begin(); opIte != user->op_end(); ++opIte) {
+	    res.push_back(new Variable((*opIte)->get()));
+	}
+    }
+
+    return res;
+}
 
 // TODO: implement this function based 
 // on the calculation rules in Figure 3
@@ -42,14 +74,14 @@ SymbolicRange * computeDefRangeWithOps(Variable * variable,
 }
 
 // TODO: define two global variables
-// map<Variable *, SymbolicRange*> SymTable;
 // set<Variable *> NewValSet;
 
 /*
  * Algorithm 2 (1)
  */
 void computeDefRange(Variable * variable) {
-    if (SymTable.count(variable)) {
+    SymTable * symTable = SymTable.getInstance();
+    if (!symTable->isInTable(variable)) {
     	return;
     }   
 
@@ -60,13 +92,14 @@ void computeDefRange(Variable * variable) {
 	        *(BottomSymbol.getInstance()), 
 	        *(TopSymbol.getInstance()) );
 
-    SymTable[variable] = universe;
+    symTable->putRange(variable, universe);
 
     vector<Variable*> operands = extractOperands(variable);
     vector<Variable*>::iterator opIte;
     for (opIte = operands.begin(); opIte != operands.end();
 		    opIte++) {
-	Instruction * def = getDefinition(*opIte);
+	// Instruction * def = getDefinition(*opIte);
+	Value * defVal = (*opIte)->getValue();
 	computeUseRange(*opIte, def);
     }
 
@@ -76,7 +109,7 @@ void computeDefRange(Variable * variable) {
     SymbolicRange * defRange = 
 	    computeDefRangeWithOps(variable, operands);
     
-    SymTable[variable] = defRange;
+    symTable->putRange(variable, defRange);
 
     updateDefRange(variable);
 
@@ -87,6 +120,7 @@ void computeDefRange(Variable * variable) {
  * Algorithm 2 (2)
  */
 void updateDefRange(Variable * V) {
+    SymTable * symTable = SymTable.getInstance();
     set<Variable*>::iterator newValIte;
     for (newValIte = NewValSet.begin(); newValIte != NewValSet.end(); newValIte++) {
 	Variable * W = *newValIte;
@@ -95,7 +129,8 @@ void updateDefRange(Variable * V) {
 	vector<Variable*> operands = extractOperands(W);
 	vector<Variable*>::iterator opIte;
 	for (opIte = operands.begin(); opIte != operands.end(); opIte++) {
-            Instruction * def = getDefinition(*opIte);
+            // Instruction * def = getDefinition(*opIte);
+	    Value * defVal = (*opIte)->getValue();
 	    computeUseRange(*opIte, def);
 	}
 
@@ -103,7 +138,8 @@ void updateDefRange(Variable * V) {
 	    computeDefRangeWithOps(W, operands);
         
 	// TODO: think about the design of intersect
-	bool updated = SymTable[W]->intersect(defRange);
+	SymbolicRange * wRange = symTable->getRange(W);
+	bool updated = wRange->intersect(defRange);
         if (updated) {
 	    updateDefRange(W);
 	}
@@ -122,7 +158,8 @@ set<Predicate*> extractPredicates(Variable * V, Instruction * P) {
  * Algorithm 3
  */
 void refineDefRange(Variable * V, Instruction * P) {
-    SymbolicRange *defRange = SymTable[V];
+    SymTable * symTable = SymTable.getInstance();
+    SymbolicRange *defRange = symTable->getRange(V);
     set<Predicate*> predicates = extractPredicates(V, P);
     
     set<Predicate*>::iterator predIte;
@@ -153,23 +190,4 @@ int main() {
 
     return 0;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
