@@ -3,6 +3,11 @@
 
 class SymbolicRange;
 
+/*
+ * TODO: this class might be removed,
+ * as the LLVM Use class looks like
+ * the right one to use.
+ */
 class VariableInstance {
 private:
     Variable * var;

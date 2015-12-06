@@ -10,6 +10,7 @@
 #include "../symbolic/AtomicSymbol.h"
 
 using namespace std;
+// need also use namespace llvm;
 
 /*
  * Algorithm 1 in the paper
@@ -19,52 +20,66 @@ SymbolicRange computeUseRange(VariableInstance vInst) {
     computeDefRange(V);
 
     Instruction * P = vInst->getInstruction(); 
-    return refineDefRange(V, P);
+
+    // TODO: think about the copy of SymbolicRange
+    return refineDefRange(V, P); 
 }
 
 // TODO: implement this function based 
 // on the supported kinds of instructions 
 // in Figure 3
-// TODO: change the interface to avoid copying vector
-vector<Variable*> extractOperands(Variable * variable) {
-    vector<Variable*> res;
-
+void extractOperands(Variable* variable, vector<Variable*>& vec) {
     Value * val = variable->getValue();
+
     if (isa<User>(val)) {
 	User * user = dynamic_cast<User*>(val);
 
-	llvm::User::const_op_iterator opIte;
-	for (opIte = user->op_begin(); opIte != user->op_end(); ++opIte) {
-	    res.push_back(new Variable((*opIte)->get()));
-	}
-    }
-
-    return res;
+	
+	if (user.isBinaryOp()){
+	    // solvable types:
+	    // llvm::Instruction::Add
+	    // llvm::Instruction::Sub
+	    // llvm::Instruction::Mul
+	    // llvm::Instruction::Div
+	    // llvm::Instruction::Rem 
+	    // (what about urem vs. srem?)
+	    
+            // there are exactly two operands
+	    llvm::User::const_op_iterator opIte;
+	    for (opIte = user->op_begin(); opIte != user->op_end(); ++opIte) {
+	        Value * opPtr = (*opIte)->get();
+	        vec.push_back(new Variable(opPtr));
+	    }
+	} 
+    } else if (isa<llvm::PHINode>(val)) {
+	PHINode * phiNode = dynamic_cast<PHINode*>(val);
+	// TODO: deal with a phi node
+    } else if (isa<llvm::LoadInst(val)) {
+	// Load(A, I), where A is a contant aggregate 
+	// (TODO: how to determine the type of A...?)
+    } // else if val is a user input or cannot be resolved
+    // TODO: how to determine val is provided by user...?
 }
 
 // TODO: implement this function based 
 // on the suppored kinds of predicate 
 // instructions in Figure 4
-vector<Variable*> extractOperands(Predicate * pred) {
+void extractOperands(Predicate* pred, vector<Variable*>& vec) {
     // if the predicate can be supported 
     // by the rules in Figure 4
-    return extractOperandsFromInstruction(pred);
+    extractOperandsFromInstruction(pred, vec);
 }
 
-// TODO: change the interface to avoid copying vector
-vector<Variable*> extractOperandsFromInstruction(Instruction * instr) {
-    vector<Variable*> res;
-
+void extractOperandsFromInstruction(Instruction* instr, vector<Variable*>& vec) {
     if (isa<User>(instr)) {
-	User * user = dynamic_cast<User*>(instr);
+	User* user = dynamic_cast<User*>(instr);
 
 	llvm::User::const_op_iterator opIte;
 	for (opIte = user->op_begin(); opIte != user->op_end(); ++opIte) {
-	    res.push_back(new Variable((*opIte)->get()));
+	    Value* opPtr =  (*opIte)->get();
+	    vec.push_back(new Variable(opPtr));
 	}
     }
-
-    return res;
 }
 
 // TODO: implement this function based 
@@ -73,8 +88,6 @@ SymbolicRange * computeDefRangeWithOps(Variable * variable,
 		vector<Variable*> operands) {
 }
 
-// TODO: define two global variables
-// set<Variable *> NewValSet;
 
 /*
  * Algorithm 2 (1)
@@ -152,6 +165,7 @@ void updateDefRange(Variable * V) {
 // reachable from only one of the 
 // branches of the predicate
 set<Predicate*> extractPredicates(Variable * V, Instruction * P) {
+
 }
 
 /*
