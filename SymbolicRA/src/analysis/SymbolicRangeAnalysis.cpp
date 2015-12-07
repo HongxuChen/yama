@@ -86,6 +86,7 @@ void extractOperandsFromInstruction(Instruction* instr, vector<Variable*>& vec) 
 // on the calculation rules in Figure 3
 SymbolicRange * computeDefRangeWithOps(Variable * variable,
 		vector<Variable*> operands) {
+    // NEXT
 }
 
 
@@ -94,7 +95,8 @@ SymbolicRange * computeDefRangeWithOps(Variable * variable,
  */
 void computeDefRange(Variable * variable) {
     SymTable * symTable = SymTable.getInstance();
-    if (!symTable->isInTable(variable)) {
+    // if the range is in the table
+    if (symTable->isInTable(variable)) {
     	return;
     }   
 
@@ -104,16 +106,18 @@ void computeDefRange(Variable * variable) {
     SymbolicRange * universe = new SymbolicRange(
 	        *(BottomSymbol.getInstance()), 
 	        *(TopSymbol.getInstance()) );
-
+    // initialize with the universe
     symTable->putRange(variable, universe);
 
-    vector<Variable*> operands = extractOperands(variable);
+    // find operands to compute variable
+    vector<Variable*> operands; 
+    extractOperands(variable, operands);
     vector<Variable*>::iterator opIte;
-    for (opIte = operands.begin(); opIte != operands.end();
-		    opIte++) {
-	// Instruction * def = getDefinition(*opIte);
+    for (opIte = operands.begin(); 
+		    opIte != operands.end(); opIte++) {
 	Value * defVal = (*opIte)->getValue();
-	computeUseRange(*opIte, def);
+        VariableInstance varInst(*opIte, defVal);
+	computeUseRange(varInst);
     }
 
     // TODO: compute def range for 
@@ -122,6 +126,7 @@ void computeDefRange(Variable * variable) {
     SymbolicRange * defRange = 
 	    computeDefRangeWithOps(variable, operands);
     
+    // update the range with defRange
     symTable->putRange(variable, defRange);
 
     updateDefRange(variable);

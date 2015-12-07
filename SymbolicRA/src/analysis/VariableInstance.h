@@ -14,6 +14,11 @@ private:
     Instruction * instr;
     SymbolicRange * symRange;
 public:
+    VariableInstance(Variable* v, Instruction* i) {
+        var = v;
+	instr = i;
+    }
+
     // TODO: design functions
     Variable * getVariable();
     Instruction * getInstruction();
