@@ -3,7 +3,6 @@
  * symbolic range analysis.
  */
 
-
 #include "VariableInstance.h"
 #include "../symbolic/SymbolicRange.h"
 #include "../symbolic/SymbolicExpr.h"
@@ -15,7 +14,7 @@ using namespace std;
 /*
  * Algorithm 1 in the paper
  */
-SymbolicRange computeUseRange(VariableInstance vInst) {
+SymbolicRange computeUseRange(VariableInstance& vInst) {
     Variable * V = vInst->getVariable();
     computeDefRange(V);
 
@@ -34,7 +33,6 @@ void extractOperands(Variable* variable, vector<Variable*>& vec) {
     if (isa<User>(val)) {
 	User * user = dynamic_cast<User*>(val);
 
-	
 	if (user.isBinaryOp()){
 	    // solvable types:
 	    // llvm::Instruction::Add
@@ -43,22 +41,34 @@ void extractOperands(Variable* variable, vector<Variable*>& vec) {
 	    // llvm::Instruction::Div
 	    // llvm::Instruction::Rem 
 	    // (what about urem vs. srem?)
-	    
+	    if (llvm::Instruction::Add *ADD = 
+			    dyn_cast<llvm::Instruction::Add>(val)) {
+                
+	    } else if (llvm::Instruction::Sub *SUB = 
+			    dyn_cast<llvm::Instruction::Sub>(val)) {
+	    } else if (llvm::Instruction:Mul *MUL = 
+			    dyn_cast<llvm::Instruction::Mul>(val)) {
+	    } else if (llvm::Instruction::Div *DIV = 
+			    dyn_cast<llvm::Instruction::Div>(val)) {
+	    } else if (llvm::Instruction::Rem *REM = 
+			    dyn_cast<llvm::Instruction::Rem>(val)) {
+	    }
+
             // there are exactly two operands
 	    llvm::User::const_op_iterator opIte;
 	    for (opIte = user->op_begin(); opIte != user->op_end(); ++opIte) {
 	        Value * opPtr = (*opIte)->get();
 	        vec.push_back(new Variable(opPtr));
 	    }
-	} 
-    } else if (isa<llvm::PHINode>(val)) {
-	PHINode * phiNode = dynamic_cast<PHINode*>(val);
-	// TODO: deal with a phi node
-    } else if (isa<llvm::LoadInst(val)) {
-	// Load(A, I), where A is a contant aggregate 
-	// (TODO: how to determine the type of A...?)
-    } // else if val is a user input or cannot be resolved
-    // TODO: how to determine val is provided by user...?
+	} else if (isa<llvm::PHINode>(val)) {
+	    PHINode * phiNode = dynamic_cast<PHINode*>(val);
+	    // TODO: deal with a phi node
+        } else if (isa<llvm::LoadInst(val)) {
+	    // Load(A, I), where A is a contant aggregate 
+	    // (TODO: how to determine the type of A...?)
+        } // else if val is a user input or cannot be resolved
+            // TODO: how to determine val is provided by user...?
+    }
 }
 
 // TODO: implement this function based 
@@ -86,7 +96,43 @@ void extractOperandsFromInstruction(Instruction* instr, vector<Variable*>& vec) 
 // on the calculation rules in Figure 3
 SymbolicRange * computeDefRangeWithOps(Variable * variable,
 		vector<Variable*> operands) {
-    // NEXT
+    Value * val = variable->getValue();
+
+    if (isa<User>(val)) {
+	User * user = dynamic_cast<User*>(val);
+
+	if (user.isBinaryOp()){
+	    // solvable types:
+	    // llvm::Instruction::Add
+	    // llvm::Instruction::Sub
+	    // llvm::Instruction::Mul
+	    // llvm::Instruction::Div
+	    // llvm::Instruction::Rem 
+	    // (what about urem vs. srem?)
+
+	    if (llvm::Instruction::Add *ADD = 
+			    dyn_cast<llvm::Instruction::Add>(val)) {
+                 
+	    } else if (llvm::Instruction::Sub *SUB = 
+			    dyn_cast<llvm::Instruction::Sub>(val)) {
+	    } else if (llvm::Instruction:Mul *MUL = 
+			    dyn_cast<llvm::Instruction::Mul>(val)) {
+	    } else if (llvm::Instruction::Div *DIV = 
+			    dyn_cast<llvm::Instruction::Div>(val)) {
+	    } else if (llvm::Instruction::Rem *REM = 
+			    dyn_cast<llvm::Instruction::Rem>(val)) {
+	    }
+	} else if (isa<llvm::PHINode>(val)) {
+	    PHINode * phiNode = dynamic_cast<PHINode*>(val);
+	    // TODO: deal with a phi node
+        } else if (isa<llvm::LoadInst(val)) {
+	    // Load(A, I), where A is a contant aggregate 
+	    // (TODO: how to determine the type of A...?)
+        } // else if val is a user input or cannot be resolved
+          // TODO: focus on input functions, such as scanf, 
+	  // getchar, getline, etc.
+    }
+
 }
 
 

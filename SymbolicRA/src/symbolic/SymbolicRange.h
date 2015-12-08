@@ -5,16 +5,28 @@ class SymbolicExpr;
 
 class SymbolicRange {
 private:
-    SymbolicExpr upperBound;
     SymbolicExpr lowerBound;
+    SymbolicExpr upperBound;
+    SymbolicRange mul(SymbolicExpr * E);
+    SymbolicRange div(SymbolicExpr * E);
+    SymbolicRange mod(SymbolicExpr * E);
 public:
-    // TODO: implement symbolic range 
-    // algebra shown in Figure 2
-    // plus, minus, multiply, divide, mod,
-    // union, and intersect    
-    
-    SymbolicRange(SymbolicExpr upper, SymbolicExpr lower):
-	    upperBound(upper), lowerBound(lower) { }
-    
+   SymbolicRange(SymbolicExpr lower, SymbolicExpr upper):
+	    lowerBound(lower), upperBound(upper) { }
+
+   bool containsZero();
+
+   // TODO: implement symbolic range 
+   // algebra shown in Figure 2
+   // plus, minus, multiply, divide, mod,
+   // union, and intersect    
+   SymbolicRange add(SymbolicRange * other);
+   SymbolicRange sub(SymbolicRange * other);
+   SymbolicRange mul(SymbolicRange * other);
+   SymbolicRange div(SymbolicRange * other);
+   SymbolicRange mod(SymbolicRange * other);
+   SymbolicRange unite(SymbolicRange * other);
+   SymbolicRange intersect(SymbolicRange * other);
+   
 };
 #endif
