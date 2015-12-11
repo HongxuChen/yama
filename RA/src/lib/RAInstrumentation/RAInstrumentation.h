@@ -53,6 +53,4 @@ struct RAInstrumentation : public ModulePass {
 };
 }
 
-char RAInstrumentation::ID = 0;
-
 #endif /* RAINSTRUMENTATION_H_ */

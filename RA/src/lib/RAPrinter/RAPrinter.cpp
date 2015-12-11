@@ -30,12 +30,12 @@ class RAPrinterInterProceduralCousot : public llvm::ModulePass {
 
     std::string Filename = "/tmp/RAEstimatedValues." + mIdentifier + ".txt";
 
-    std::string ErrorInfo;
-    raw_fd_ostream File(Filename.c_str(), ErrorInfo);
+    std::error_code code;
+    raw_fd_ostream File(Filename.data(), code, sys::fs::F_None);
 
-    if (!ErrorInfo.empty()) {
+    if (code.value() != 0) {
       errs() << "Error opening file /tmp/RAEstimatedValues." << mIdentifier
-             << ".txt for writing! Error Info: " << ErrorInfo << " \n";
+             << ".txt for writing! Error Info: " << code.message() << " \n";
       return false;
     }
 
