@@ -1,9 +1,5 @@
 #include "RangeAnalysisTest.h"
 
-unsigned MAX_BIT_INT = 1;
-APInt Min = APInt::getSignedMinValue(MAX_BIT_INT);
-APInt Max = APInt::getSignedMaxValue(MAX_BIT_INT);
-APInt Zero(MAX_BIT_INT, 0, true);
 
 void RangeUnitTest::printStats() {
   errs()

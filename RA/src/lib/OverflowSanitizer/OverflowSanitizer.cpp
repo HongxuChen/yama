@@ -505,7 +505,7 @@ void OverflowSanitizer::InsertGlobalDeclarations() {
       PointerType::getUnqual(Type::getInt8Ty(*context)));  // message
   Params.push_back(
       PointerType::getUnqual(Type::getInt8Ty(*context)));  // file name
-  Params.push_back(Type::getInt32Ty(*context));  // line number
+  Params.push_back(Type::getInt32Ty(*context));            // line number
   Params.push_back(Type::getInt32Ty(*context));  // Instruction Identifier
   ArrayRef<Type*> aRParams(Params);
 
@@ -630,8 +630,9 @@ void OverflowSanitizer::insertInstrumentation(Instruction* I,
 
       if (isSigned) {
         // How to do an integer bug with a signed Add instruction:
-        //		add two big positive numbers and get a negative number as
-        //result
+        //		add two big positive numbers and get a negative number
+        //as
+        // result
         positiveOp1 =
             new ICmpInst(nextInstruction, CmpInst::ICMP_SGE, op1, constZero);
         positiveOp2 =
@@ -645,7 +646,7 @@ void OverflowSanitizer::insertInstrumentation(Instruction* I,
                                    negativeResult, "", nextInstruction);
 
         //	or	add two big negative numbers and get a positive number
-        //as result
+        // as result
         negativeOp1 =
             new ICmpInst(nextInstruction, CmpInst::ICMP_SLT, op1, constZero);
         negativeOp2 =
@@ -665,7 +666,7 @@ void OverflowSanitizer::insertInstrumentation(Instruction* I,
       } else {
         // How to do an integer bug with a unsigned Add instruction:
         //		add two numbers and get a result smaller than one of the
-        //operands
+        // operands
         lessThanOp1 = new ICmpInst(nextInstruction, CmpInst::ICMP_ULT,
                                    dyn_cast<Value>(I), op1);
         lessThanOp2 = new ICmpInst(nextInstruction, CmpInst::ICMP_ULT,
@@ -679,8 +680,9 @@ void OverflowSanitizer::insertInstrumentation(Instruction* I,
 
       if (isSigned) {
         // How to do an integer bug with a signed Sub instruction:
-        //		subtract a positive number from a negative number and get
-        //a positive number as result
+        //		subtract a positive number from a negative number and
+        //get
+        // a positive number as result
         negativeOp1 =
             new ICmpInst(nextInstruction, CmpInst::ICMP_SLT, op1, constZero);
         positiveOp2 =
@@ -694,7 +696,7 @@ void OverflowSanitizer::insertInstrumentation(Instruction* I,
                                    positiveResult, "", nextInstruction);
 
         //	or	subtract a negative number from a positive number and
-        //get a negative number as result
+        // get a negative number as result
         positiveOp1 =
             new ICmpInst(nextInstruction, CmpInst::ICMP_SGE, op1, constZero);
         negativeOp2 =
@@ -714,8 +716,9 @@ void OverflowSanitizer::insertInstrumentation(Instruction* I,
 
       } else {
         // How to do an integer bug with an unsigned Sub instruction:
-        //		subtract a number from a smaller number. It should result
-        //a negative number, but Unsigned numbers
+        //		subtract a number from a smaller number. It should
+        //result
+        // a negative number, but Unsigned numbers
         //		don't store negative numbers. There is our overflow.
         hasIntegerBug =
             new ICmpInst(nextInstruction, CmpInst::ICMP_ULT, op1, op2);
@@ -731,7 +734,7 @@ void OverflowSanitizer::insertInstrumentation(Instruction* I,
       // 	(It can be an expensive test. If it gets too expensive, we can
       // test it in terms of
       //	 the most significant bit of the operators and the most
-      //significant bit of the result)
+      // significant bit of the result)
 
       // First verify if the operand op1 is zero (it would cause a
       // divide-by-zero exception)

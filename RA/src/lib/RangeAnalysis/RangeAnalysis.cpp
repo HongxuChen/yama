@@ -49,7 +49,7 @@ STATISTIC(maxVisit, "Max number of times a value has been visited.");
 
 // The number of bits needed to store the largest variable of the function
 // (APInt).
-unsigned MAX_BIT_INT = 1;
+// unsigned MAX_BIT_INT = 1;
 
 // This map is used to store the number of times that the narrow_meet
 // operator is called on a variable. It was a Fernando's suggestion.
@@ -60,9 +60,9 @@ DenseMap<const Value *, unsigned> FerMap;
 // ========================================================================== //
 
 // The min and max integer values for a given bit width.
-APInt Min = APInt::getSignedMinValue(MAX_BIT_INT);
-APInt Max = APInt::getSignedMaxValue(MAX_BIT_INT);
-APInt Zero(MAX_BIT_INT, 0, true);
+// APInt Min = APInt::getSignedMinValue(MAX_BIT_INT);
+// APInt Max = APInt::getSignedMaxValue(MAX_BIT_INT);
+// APInt Zero(MAX_BIT_INT, 0, true);
 
 // String used to identify sigmas
 // IMPORTANT: the range-analysis identifies sigmas by comparing
@@ -1131,8 +1131,9 @@ Range Range::Xor(const Range &other) const {
 }
 
 // Truncate
-//		- if the source range is entirely inside max bit range, he is the
-//result
+//		- if the source range is entirely inside max bit range, he is
+// the
+// result
 //      - else, the result is the max bit range
 Range Range::truncate(unsigned bitwidth) const {
   APInt maxupper = APInt::getSignedMaxValue(bitwidth);
@@ -3241,7 +3242,7 @@ void ConstraintGraph::computeStats() {
 //{
 //	std::deque<BasicOp*> list;
 //	for (GenOprs::iterator opit = oprs.begin(), opend = oprs.end(); opit !=
-//opend; ++opit) {
+// opend; ++opit) {
 //		BasicOp *op = *opit;
 //
 //		if (std::find(component.begin(), component.end(), op->getSink())
@@ -3253,7 +3254,7 @@ void ConstraintGraph::computeStats() {
 //	DefMap defMap;
 //
 //	for (std::deque<BasicOp*>::iterator opit = list.begin(), opend =
-//list.end(); opit != opend; ++opit) {
+// list.end(); opit != opend; ++opit) {
 //		BasicOp *op = *opit;
 //		defMap[op->getSink()] = op;
 //	}
@@ -3393,7 +3394,7 @@ void Nuutila::addControlDependenceEdges(SymbMap *symbMap, UseMap *useMap,
 
       BasicOp *cdedge = new ControlDep((*opit)->getSink(), source);
       //			BasicOp *cdedge = new
-      //ControlDep((cast<UnaryOp>(*opit))->getSource(), source);
+      // ControlDep((cast<UnaryOp>(*opit))->getSource(), source);
 
       //(*useMap)[(*opit)->getSink()->getValue()].insert(cdedge);
       (*useMap)[sit->first].insert(cdedge);

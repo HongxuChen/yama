@@ -140,10 +140,14 @@ llvm::raw_fd_ostream _log_file(_log_fileName.str().c_str(), _log_ErrorInfo,
 #define FINISH_LOG
 #endif
 //****************************************************************************//
+static unsigned MAX_BIT_INT = 1;
+static APInt Min = APInt::getSignedMinValue(MAX_BIT_INT);
+static APInt Max = APInt::getSignedMaxValue(MAX_BIT_INT);
+static APInt Zero(MAX_BIT_INT, 0, true);
 
-extern APInt Min;
-extern APInt Max;
-extern APInt Zero;
+// extern APInt Min;
+// extern APInt Max;
+// extern APInt Zero;
 
 /// In our range analysis pass we have to perform operations on ranges all the
 /// time. LLVM has a class to perform operations on ranges: the class
