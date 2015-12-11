@@ -8,6 +8,7 @@ int bar(int i, int j) {
     i = i + 1;
     j = j - 1;
   }
+  return 0;
 }
 
 int foo(int k, int N) {

@@ -3,6 +3,7 @@
 // This file implements the LLVM "Range Analysis Instrumentation" pass
 //
 //===----------------------------------------------------------------------===//
+#define DEBUG_TYPE "OverflowDetect"
 #include "llvm/IR/Type.h"
 #include "llvm/IR/Constants.h"
 #include "llvm/Support/FileSystem.h"
@@ -27,7 +28,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "../RangeAnalysis_V2/RangeAnalysis.h"
+#include "../RangeAnalysis/RangeAnalysis.h"
 
 using namespace llvm;
 

@@ -1,9 +1,9 @@
-file(GLOB BASE_FILES RangeAnalysis/*.cpp vSSA/*.cpp RAInstrumentation/*.cpp RAPrinter OverflowDetect/*.cpp)
+file(GLOB BASE_FILES RangeAnalysis/*.cpp ClientRA/*.cpp vSSA/*.cpp uSSA/*.cpp RAInstrumentation/*.cpp RAPrinter) # OverflowDetect/*.cpp)
 
-project(base)
+project(range)
 
-add_library(${PROJECT_NAME}
+add_library(${PROJECT_NAME} SHARED
   ${BASE_FILES}
   )
 
-target_link_libraries(${PROJECT_NAME} utils)
+target_link_libraries(${PROJECT_NAME})

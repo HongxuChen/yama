@@ -21,14 +21,14 @@ bool getTruncInstrumentation() { return TruncInstrumentation; }
 
 void uSSA::getAnalysisUsage(AnalysisUsage &AU) const {
   AU.addRequiredTransitive<DominanceFrontier>();
-  AU.addRequiredTransitive<DominatorTree>();
+  AU.addRequiredTransitive<DominatorTreeWrapperPass>();
 
   // This pass modifies the program, but not the CFG
   AU.setPreservesCFG();
 }
 
 bool uSSA::runOnFunction(Function &F) {
-  DT_ = &getAnalysis<DominatorTree>();
+  DT_ = &getAnalysis<DominatorTreeWrapperPass>();
   DF_ = &getAnalysis<DominanceFrontier>();
 
   // Iterate over all Basic Blocks of the Function, calling the function that
@@ -67,7 +67,7 @@ void uSSA::createNewDefs(BasicBlock *BB) {
               Twine(newname), next);
           newdef->setMetadata("new-inst",
                               MDNode::get(BB->getParent()->getContext(),
-                                          llvm::ArrayRef<Value *>()));
+                                          llvm::ArrayRef<Metadata *>()));
 
           renameNewDefs(newdef);
 
@@ -93,7 +93,7 @@ void uSSA::createNewDefs(BasicBlock *BB) {
                 Twine(newname), next);
             newdef->setMetadata("new-inst",
                                 MDNode::get(BB->getParent()->getContext(),
-                                            llvm::ArrayRef<Value *>()));
+                                            llvm::ArrayRef<Metadata *>()));
 
             renameNewDefs(newdef);
 
@@ -136,7 +136,7 @@ void uSSA::renameNewDefs(Instruction *newdef) {
     BasicBlock::iterator useit(usepointers[i]);
 
     // Check if the use is in the dominator tree of newdef(V)
-    if (DT_->dominates(BB, BB_user)) {
+    if (DT_->getDomTree().dominates(BB, BB_user)) {
       // If in the same basicblock, only rename if the use is posterior to the
       // newdef
       if (BB_user == BB) {

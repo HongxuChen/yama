@@ -35,7 +35,7 @@ class uSSA : public FunctionPass {
 
  private:
   // Variables always live
-  DominatorTree *DT_;
+  DominatorTreeWrapperPass *DT_;
   DominanceFrontier *DF_;
 };
 }
