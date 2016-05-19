@@ -1,0 +1,53 @@
+\documentclass[10pt]{article}
+\usepackage{geometry}
+\geometry{a4paper}
+
+% See the ``Article customise'' template for come common customisations
+\usepackage{amsthm}
+\usepackage{amsmath}
+\usepackage{amssymb}
+%\usepackage{proof}
+\usepackage{semantic}
+%\usepackage{amsfonts}
+%\usepackage{mathrsfs}
+
+
+\begin{document}
+
+\section{Range Analysis}
+
+\subsection{Widening}
+
+\begin{eqnarray}
+	I_{n}[Y]=
+	\begin{cases}
+	e(Y) & \quad I_{n-1}[Y]=[\perp,\perp]\\
+	[-\infty, +\infty] & \quad e(Y)_{\downarrow}<I_{n-1}[Y]_{\downarrow}\wedge e(Y)_{\uparrow} >  I_{n-1}[Y]_{\uparrow}\\
+	[-\infty, I_{n-1}[Y]_{\uparrow}] & \quad e(Y)_{\downarrow} <I_{n-1}[Y]_{\downarrow}\wedge e(Y)_{\uparrow} \leq I_{n-1}[Y]_{\uparrow}\\
+	[I_{n-1}[Y]_{\downarrow}, +\infty] & \quad e(Y)_{\downarrow} > I_{n-1}[Y]_{\downarrow}\\
+	[???] & \quad 	otherwise
+	\end{cases}
+\end{eqnarray}
+
+\subsection{Actual bounds}
+\inference
+{Y=X\sqcap[l, \textsf{ft}(V)+c]\quad I[V]_{\uparrow}=u\quad u,c\in\mathbb{Z}\cup\left\{-\infty, +\infty\right\}}
+{Y=X\sqcap[l,u+c]}
+
+\inference
+{Y=X\sqcap[l, \textsf{ft}(V)+c]\quad I[V]_{\downarrow}=l\quad l,c\in\mathbb{Z}\cup\left\{-\infty, +\infty\right\}}
+{Y=X\sqcap[l+c,u]}
+
+\subsection{Narrowing}
+
+\begin{eqnarray}
+	I_{n}[Y]=
+	\begin{cases}
+		[e(Y)_{\downarrow}, I_{n-1}[Y]_{\uparrow}] &\quad I_{n-1}[Y]_{\downarrow}=-\infty \wedge e(Y)_{\downarrow}>-\infty\\
+		[I_{n-1}[Y]_{\downarrow},e_{n-1}[Y]_{\uparrow}] & \quad I_{n-1}[Y]_{\uparrow}=+\infty \wedge e(Y)_{\uparrow}<+\infty \wedge (I_{n-1}[Y]_{\downarrow}>-\infty \vee e(Y)_{\downarrow}=-\infty)\\
+		[e(Y)_{\downarrow}, I_{n-1}[Y]_{\uparrow}] & \quad I_{n-1}[Y]_{\downarrow}>e(Y)_{\downarrow} \wedge I_{n-1}[Y]_{\uparrow}<+\infty \wedge (I_{n-1}[Y]_{\downarrow}>-\infty \vee e(Y)_{\downarrow}=-\infty)\\
+		[I_{n-1}[Y]_{\downarrow}, e(Y)_{\uparrow}] & \quad I_{n-1}[Y]_{\uparrow}\leq e(Y)_{\uparrow} \wedge I_{n-1}[Y]_{\uparrow}<+\infty \wedge (I_{n-1}[Y]_{\downarrow}>-\infty \vee e(Y)_{\downarrow}=-\infty)\\
+	\end{cases}
+\end{eqnarray}
+
+\end{document}
