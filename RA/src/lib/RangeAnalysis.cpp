@@ -1,23 +1,14 @@
 //===-------------------------- RangeAnalysis.cpp -------------------------===//
-///===----Performs the Range Analysis of the variables of the function-----===//
+//===----- Performs a range analysis of the variables of the function -----===//
+//
+//					 The LLVM Compiler Infrastructure
+//
+// This file is distributed under the University of Illinois Open Source
+// License. See LICENSE.TXT for details.
 //
 // Copyright (C) 2011-2012, 2015    Victor Hugo Sperle Campos
 //               2011               Douglas do Couto Teixeira
 //               2012               Igor Rafael de Assis Costa
-//
-// This library is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation;
-// version 2.1 of the License.
-//
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-// Lesser General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public
-// License along with this library; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 //
 //===----------------------------------------------------------------------===//
 
@@ -49,7 +40,7 @@ STATISTIC(maxVisit, "Max number of times a value has been visited.");
 
 // The number of bits needed to store the largest variable of the function
 // (APInt).
-// unsigned MAX_BIT_INT = 1;
+unsigned MAX_BIT_INT = 1;
 
 // This map is used to store the number of times that the narrow_meet
 // operator is called on a variable. It was a Fernando's suggestion.
@@ -60,9 +51,9 @@ DenseMap<const Value *, unsigned> FerMap;
 // ========================================================================== //
 
 // The min and max integer values for a given bit width.
-// APInt Min = APInt::getSignedMinValue(MAX_BIT_INT);
-// APInt Max = APInt::getSignedMaxValue(MAX_BIT_INT);
-// APInt Zero(MAX_BIT_INT, 0, true);
+APInt Min = APInt::getSignedMinValue(MAX_BIT_INT);
+APInt Max = APInt::getSignedMaxValue(MAX_BIT_INT);
+APInt Zero(MAX_BIT_INT, 0, true);
 
 // String used to identify sigmas
 // IMPORTANT: the range-analysis identifies sigmas by comparing
@@ -95,6 +86,7 @@ static void printVarName(const Value *V, raw_ostream &OS) {
 
 /// Selects the instructions that we are going to evaluate.
 static bool isValidInstruction(const Instruction *I) {
+
     assert(I);
 
     switch (I->getOpcode()) {
@@ -145,7 +137,8 @@ unsigned RangeAnalysis::getMaxBitWidth(const Function &F) {
     }
 
     // Bitwidth equal to 0 is not valid, so we increment to 1
-    if (max == 0) ++max;
+    if (max == 0)
+        ++max;
 
     return max;
 }
@@ -165,14 +158,10 @@ void RangeAnalysis::updateMinMax(unsigned maxBitWidth) {
 // IntraProceduralRangeAnalysis
 // ========================================================================== //
 template<class CGT>
-APInt IntraProceduralRA<CGT>::getMin() {
-    return Min;
-}
+APInt IntraProceduralRA<CGT>::getMin() { return Min; }
 
 template<class CGT>
-APInt IntraProceduralRA<CGT>::getMax() {
-    return Max;
-}
+APInt IntraProceduralRA<CGT>::getMax() { return Max; }
 
 template<class CGT>
 Range IntraProceduralRA<CGT>::getRange(const Value *v) {
@@ -249,14 +238,10 @@ IntraProceduralRA<CGT>::~IntraProceduralRA() {
 // InterProceduralRangeAnalysis
 // ========================================================================== //
 template<class CGT>
-APInt InterProceduralRA<CGT>::getMin() {
-    return Min;
-}
+APInt InterProceduralRA<CGT>::getMin() { return Min; }
 
 template<class CGT>
-APInt InterProceduralRA<CGT>::getMax() {
-    return Max;
-}
+APInt InterProceduralRA<CGT>::getMax() { return Max; }
 
 template<class CGT>
 Range InterProceduralRA<CGT>::getRange(const Value *v) {
@@ -271,7 +256,8 @@ unsigned InterProceduralRA<CGT>::getMaxBitWidth(Module &M) {
         if (!I->isDeclaration()) {
             unsigned bitwidth = RangeAnalysis::getMaxBitWidth(*I);
 
-            if (bitwidth > max) max = bitwidth;
+            if (bitwidth > max)
+                max = bitwidth;
         }
     }
     return max;
@@ -293,7 +279,8 @@ bool InterProceduralRA<CGT>::runOnModule(Module &M) {
     for (Module::iterator I = M.begin(), E = M.end(); I != E; ++I) {
         // If the function is only a declaration, or if it has variable number of
         // arguments, do not match
-        if (I->isDeclaration() || I->isVarArg()) continue;
+        if (I->isDeclaration() || I->isVarArg())
+            continue;
 
         CG->buildGraph(*I);
         MatchParametersAndReturnValues(*I, *CG);
@@ -367,7 +354,8 @@ void InterProceduralRA<CGT>::MatchParametersAndReturnValues(
 
             ReturnInst *RI = dyn_cast<ReturnInst>(terminator);
 
-            if (!RI) continue;
+            if (!RI)
+                continue;
 
             // Get the return value and insert in the data structure
             ReturnValues.insert(RI->getReturnValue());
@@ -407,17 +395,20 @@ void InterProceduralRA<CGT>::MatchParametersAndReturnValues(
         User *Us = U->getUser();
 
         // Ignore blockaddress uses
-        if (isa<BlockAddress>(Us)) continue;
+        if (isa<BlockAddress>(Us))
+            continue;
 
         // Used by a non-instruction, or not the callee of a function, do not
         // match.
-        if (!isa<CallInst>(Us) && !isa<InvokeInst>(Us)) continue;
+        if (!isa<CallInst>(Us) && !isa<InvokeInst>(Us))
+            continue;
 
         Instruction *caller = cast<Instruction>(Us);
 
         CallSite CS(caller);
 
-        if (!CS.isCallee(U)) continue;
+        if (!CS.isCallee(U))
+            continue;
 
         // Iterate over the real parameters and put them in the data structure
         CallSite::arg_iterator AI;
@@ -468,7 +459,8 @@ void InterProceduralRA<CGT>::MatchParametersAndReturnValues(
 
         // Real parameters are cleaned before moving to the next use (for safety's
         // sake)
-        for (i = 0; i < Parameters.size(); ++i) Parameters[i].second = NULL;
+        for (i = 0; i < Parameters.size(); ++i)
+            Parameters[i].second = NULL;
     }
 }
 
@@ -500,18 +492,16 @@ InterProceduralRA<CGT>::~InterProceduralRA() {
 #endif
 }
 
-template<class CGT>
-char IntraProceduralRA<CGT>::ID = 0;
-static RegisterPass<IntraProceduralRA<Cousot> > Y(
-        "ra-intra-cousot", "Range Analysis (Cousot - intra)");
-static RegisterPass<IntraProceduralRA<CropDFS> > Z(
-        "ra-intra-crop", "Range Analysis (Crop - intra)");
-template<class CGT>
-char InterProceduralRA<CGT>::ID = 2;
-static RegisterPass<InterProceduralRA<Cousot> > W(
-        "ra-inter-cousot", "Range Analysis (Cousot - inter)");
-static RegisterPass<InterProceduralRA<CropDFS> > X(
-        "ra-inter-crop", "Range Analysis (Crop - inter)");
+template<class CGT> char IntraProceduralRA<CGT>::ID = 0;
+static RegisterPass<IntraProceduralRA<Cousot>>
+        Y("ra-intra-cousot", "Range Analysis (Cousot - intra)");
+static RegisterPass<IntraProceduralRA<CropDFS>>
+        Z("ra-intra-crop", "Range Analysis (Crop - intra)");
+template<class CGT> char InterProceduralRA<CGT>::ID = 2;
+static RegisterPass<InterProceduralRA<Cousot>>
+        W("ra-inter-cousot", "Range Analysis (Cousot - inter)");
+static RegisterPass<InterProceduralRA<CropDFS>>
+        X("ra-inter-crop", "Range Analysis (Crop - inter)");
 
 // ========================================================================== //
 // Range
@@ -519,7 +509,8 @@ static RegisterPass<InterProceduralRA<CropDFS> > X(
 Range::Range() : l(Min), u(Max), type(Regular) { }
 
 Range::Range(APInt lb, APInt ub, RangeType rType) : l(lb), u(ub), type(rType) {
-    if (lb.sgt(ub)) type = Empty;
+    if (lb.sgt(ub))
+        type = Empty;
 }
 
 Range::~Range() { }
@@ -602,20 +593,20 @@ Range Range::sub(const Range &other) const {
     return Range(l, u);
 }
 
-#define MUL_HELPER(x, y)                                                     \
-  x.eq(Max)                                                                  \
-      ? (y.slt(Zero) ? Min : (y.eq(Zero) ? Zero : Max))                      \
-      : (y.eq(Max)                                                           \
-             ? (x.slt(Zero) ? Min : (x.eq(Zero) ? Zero : Max))               \
-             : (x.eq(Min)                                                    \
-                    ? (y.slt(Zero) ? Max : (y.eq(Zero) ? Zero : Min))        \
-                    : (y.eq(Min)                                             \
-                           ? (x.slt(Zero) ? Max : (x.eq(Zero) ? Zero : Min)) \
+#define MUL_HELPER(x, y)                                                       \
+  x.eq(Max)                                                                    \
+      ? (y.slt(Zero) ? Min : (y.eq(Zero) ? Zero : Max))                        \
+      : (y.eq(Max)                                                             \
+             ? (x.slt(Zero) ? Min : (x.eq(Zero) ? Zero : Max))                 \
+             : (x.eq(Min)                                                      \
+                    ? (y.slt(Zero) ? Max : (y.eq(Zero) ? Zero : Min))          \
+                    : (y.eq(Min)                                               \
+                           ? (x.slt(Zero) ? Max : (x.eq(Zero) ? Zero : Min))   \
                            : (x * y))))
 
-#define MUL_OV(x, y, xy)                            \
-  (x.isStrictlyPositive() == y.isStrictlyPositive() \
-       ? (xy.isNegative() ? Max : xy)               \
+#define MUL_OV(x, y, xy)                                                       \
+  (x.isStrictlyPositive() == y.isStrictlyPositive()                            \
+       ? (xy.isNegative() ? Max : xy)                                          \
        : (xy.isStrictlyPositive() ? Min : xy))
 
 /// Add and Mul are commutatives. So, they are a little different
@@ -656,15 +647,15 @@ Range Range::mul(const Range &other) const {
     return Range(*min, *max);
 }
 
-#define DIV_HELPER(OP, x, y)                                                 \
-  x.eq(Max)                                                                  \
-      ? (y.slt(Zero) ? Min : (y.eq(Zero) ? Zero : Max))                      \
-      : (y.eq(Max)                                                           \
-             ? (x.slt(Zero) ? Min : (x.eq(Zero) ? Zero : Max))               \
-             : (x.eq(Min)                                                    \
-                    ? (y.slt(Zero) ? Max : (y.eq(Zero) ? Zero : Min))        \
-                    : (y.eq(Min)                                             \
-                           ? (x.slt(Zero) ? Max : (x.eq(Zero) ? Zero : Min)) \
+#define DIV_HELPER(OP, x, y)                                                   \
+  x.eq(Max)                                                                    \
+      ? (y.slt(Zero) ? Min : (y.eq(Zero) ? Zero : Max))                        \
+      : (y.eq(Max)                                                             \
+             ? (x.slt(Zero) ? Min : (x.eq(Zero) ? Zero : Max))                 \
+             : (x.eq(Min)                                                      \
+                    ? (y.slt(Zero) ? Max : (y.eq(Zero) ? Zero : Min))          \
+                    : (y.eq(Min)                                               \
+                           ? (x.slt(Zero) ? Max : (x.eq(Zero) ? Zero : Min))   \
                            : (x.OP(y)))))
 
 Range Range::udiv(const Range &other) const {
@@ -763,19 +754,19 @@ Range Range::urem(const Range &other) const {
     candidates[3] = Max;
 
     if (a.ne(Min) && c.ne(Min)) {
-        candidates[0] = a.urem(c);  // lower lower
+        candidates[0] = a.urem(c); // lower lower
     }
 
     if (a.ne(Min) && d.ne(Max)) {
-        candidates[1] = a.urem(d);  // lower upper
+        candidates[1] = a.urem(d); // lower upper
     }
 
     if (b.ne(Max) && c.ne(Min)) {
-        candidates[2] = b.urem(c);  // upper lower
+        candidates[2] = b.urem(c); // upper lower
     }
 
     if (b.ne(Max) && d.ne(Max)) {
-        candidates[3] = b.urem(d);  // upper upper
+        candidates[3] = b.urem(d); // upper upper
     }
 
     // Lower bound is the min value from the vector, while upper bound is the max
@@ -818,19 +809,19 @@ Range Range::srem(const Range &other) const {
     candidates[3] = Max;
 
     if (a.ne(Min) && c.ne(Min)) {
-        candidates[0] = a.srem(c);  // lower lower
+        candidates[0] = a.srem(c); // lower lower
     }
 
     if (a.ne(Min) && d.ne(Max)) {
-        candidates[1] = a.srem(d);  // lower upper
+        candidates[1] = a.srem(d); // lower upper
     }
 
     if (b.ne(Max) && c.ne(Min)) {
-        candidates[2] = b.srem(c);  // upper lower
+        candidates[2] = b.srem(c); // upper lower
     }
 
     if (b.ne(Max) && d.ne(Max)) {
-        candidates[3] = b.srem(d);  // upper upper
+        candidates[3] = b.srem(d); // upper upper
     }
 
     // Lower bound is the min value from the vector, while upper bound is the max
@@ -850,8 +841,10 @@ Range Range::srem(const Range &other) const {
 
 // Logic has been borrowed from ConstantRange
 Range Range::shl(const Range &other) const {
-    if (isEmpty()) return Range(*this);
-    if (other.isEmpty()) return Range(other);
+    if (isEmpty())
+        return Range(*this);
+    if (other.isEmpty())
+        return Range(other);
 
     if (this->isUnknown() || other.isUnknown()) {
         return Range(Min, Max, Unknown);
@@ -870,7 +863,8 @@ Range Range::shl(const Range &other) const {
     APInt max = b.shl(d);
 
     APInt Zeros(MAX_BIT_INT, b.countLeadingZeros());
-    if (Zeros.ugt(d)) return Range(min, max);
+    if (Zeros.ugt(d))
+        return Range(min, max);
 
     // [-inf, +inf]
     return Range(Min, Max);
@@ -878,8 +872,10 @@ Range Range::shl(const Range &other) const {
 
 // Logic has been borrowed from ConstantRange
 Range Range::lshr(const Range &other) const {
-    if (isEmpty()) return Range(*this);
-    if (other.isEmpty()) return Range(other);
+    if (isEmpty())
+        return Range(*this);
+    if (other.isEmpty())
+        return Range(other);
 
     if (this->isUnknown() || other.isUnknown()) {
         return Range(Min, Max, Unknown);
@@ -901,8 +897,10 @@ Range Range::lshr(const Range &other) const {
 }
 
 Range Range::ashr(const Range &other) const {
-    if (isEmpty()) return Range(*this);
-    if (other.isEmpty()) return Range(other);
+    if (isEmpty())
+        return Range(*this);
+    if (other.isEmpty())
+        return Range(other);
 
     if (this->isUnknown() || other.isUnknown()) {
         return Range(Min, Max, Unknown);
@@ -965,15 +963,18 @@ Range Range::And(const Range &other) const {
 // This operator is used when we are dealing with values
 // with more than 64-bits
 Range Range::And_conservative(const Range &other) const {
-    if (isEmpty()) return Range(*this);
-    if (other.isEmpty()) return Range(other);
+    if (isEmpty())
+        return Range(*this);
+    if (other.isEmpty())
+        return Range(other);
 
     if (this->isUnknown() || other.isUnknown()) {
         return Range(Min, Max, Unknown);
     }
 
     APInt umin = APIntOps::umin(other.getUpper(), getUpper());
-    if (umin.isAllOnesValue()) return Range(Min, Max);
+    if (umin.isAllOnesValue())
+        return Range(Min, Max);
     return Range(APInt::getNullValue(MAX_BIT_INT), umin + 1);
 }
 
@@ -1025,15 +1026,18 @@ int64_t maxOR(int64_t a, int64_t b, int64_t c, int64_t d) {
 // This operator is used when we are dealing with values
 // with more than 64-bits
 Range Range::Or_conservative(const Range &other) const {
-    if (isEmpty()) return Range(*this);
-    if (other.isEmpty()) return Range(other);
+    if (isEmpty())
+        return Range(*this);
+    if (other.isEmpty())
+        return Range(other);
 
     if (this->isUnknown() || other.isUnknown()) {
         return Range(Min, Max, Unknown);
     }
 
     APInt umax = APIntOps::umax(getLower(), other.getLower());
-    if (umax.isMinValue()) return Range(Min, Max);
+    if (umax.isMinValue())
+        return Range(Min, Max);
 
     return Range(umax, APInt::getNullValue(MAX_BIT_INT));
 }
@@ -1092,8 +1096,7 @@ Range Range::Or(const Range &other) const {
             u = maxOR(0, b.getSExtValue(), 0, d.getSExtValue());
             break;
         case 7:
-            l = minOR(a.getSExtValue(), 0xFFFFFFFF, c.getSExtValue(),
-                      d.getSExtValue());
+            l = minOR(a.getSExtValue(), 0xFFFFFFFF, c.getSExtValue(), d.getSExtValue());
             u = minOR(0, b.getSExtValue(), c.getSExtValue(), d.getSExtValue());
             break;
         case 12:
@@ -1103,8 +1106,7 @@ Range Range::Or(const Range &other) const {
                       d.getSExtValue());
             break;
         case 13:
-            l = minOR(a.getSExtValue(), b.getSExtValue(), c.getSExtValue(),
-                      0xFFFFFFFF);
+            l = minOR(a.getSExtValue(), b.getSExtValue(), c.getSExtValue(), 0xFFFFFFFF);
             u = maxOR(a.getSExtValue(), b.getSExtValue(), 0, d.getSExtValue());
             break;
         case 15:
@@ -1125,14 +1127,14 @@ Range Range::Or(const Range &other) const {
 Range Range::Xor(const Range &other) const {
     if (this->isUnknown() || other.isUnknown()) {
         return Range(Min, Max, Unknown);
-    }
+    }Couto
 
     return Range(Min, Max);
 }
 
 // Truncate
 //		- if the source range is entirely inside max bit range, he is
-// the
+//the
 // result
 //      - else, the result is the max bit range
 Range Range::truncate(unsigned bitwidth) const {
@@ -1167,7 +1169,8 @@ Range Range::zextOrTrunc(unsigned bitwidth) const {
 }
 
 Range Range::intersectWith(const Range &other) const {
-    if (this->isEmpty() || other.isEmpty()) return Range(Min, Max, Empty);
+    if (this->isEmpty() || other.isEmpty())
+        return Range(Min, Max, Empty);
 
     if (this->isUnknown()) {
         return other;
@@ -1281,23 +1284,23 @@ Range SymbInterval::fixIntersects(VarNode *bound, VarNode *sink) {
     APInt upper = sink->getRange().getUpper();
 
     switch (this->getOperation()) {
-        case ICmpInst::ICMP_EQ:  // equal
+        case ICmpInst::ICMP_EQ: // equal
             return Range(l, u);
             break;
-        case ICmpInst::ICMP_SLE:  // signed less or equal
+        case ICmpInst::ICMP_SLE: // signed less or equal
             return Range(lower, u);
             break;
-        case ICmpInst::ICMP_SLT:  // signed less than
+        case ICmpInst::ICMP_SLT: // signed less than
             if (u != Max) {
                 return Range(lower, u - 1);
             } else {
                 return Range(lower, u);
             }
             break;
-        case ICmpInst::ICMP_SGE:  // signed greater or equal
+        case ICmpInst::ICMP_SGE: // signed greater or equal
             return Range(l, upper);
             break;
-        case ICmpInst::ICMP_SGT:  // signed greater than
+        case ICmpInst::ICMP_SGT: // signed greater than
             if (l != Min) {
                 return Range(l + 1, upper);
             } else {
@@ -1314,29 +1317,29 @@ Range SymbInterval::fixIntersects(VarNode *bound, VarNode *sink) {
 /// Pretty print.
 void SymbInterval::print(raw_ostream &OS) const {
     switch (this->getOperation()) {
-        case ICmpInst::ICMP_EQ:  // equal
+        case ICmpInst::ICMP_EQ: // equal
             OS << "[lb(";
             printVarName(getBound(), OS);
             OS << "), ub(";
             printVarName(getBound(), OS);
             OS << ")]";
             break;
-        case ICmpInst::ICMP_SLE:  // sign less or equal
+        case ICmpInst::ICMP_SLE: // sign less or equal
             OS << "[-inf, ub(";
             printVarName(getBound(), OS);
             OS << ")]";
             break;
-        case ICmpInst::ICMP_SLT:  // sign less than
+        case ICmpInst::ICMP_SLT: // sign less than
             OS << "[-inf, ub(";
             printVarName(getBound(), OS);
             OS << ") - 1]";
             break;
-        case ICmpInst::ICMP_SGE:  // sign greater or equal
+        case ICmpInst::ICMP_SGE: // sign greater or equal
             OS << "[lb(";
             printVarName(getBound(), OS);
             OS << "), +inf]";
             break;
-        case ICmpInst::ICMP_SGT:  // sign greater than
+        case ICmpInst::ICMP_SGT: // sign greater than
             OS << "[lb(";
             printVarName(getBound(), OS);
             OS << " - 1), +inf]";
@@ -1454,6 +1457,7 @@ UnaryOp::~UnaryOp() { }
 /// Computes the interval of the sink based on the interval of the sources,
 /// the operation and the interval associated to the operation.
 Range UnaryOp::eval() const {
+
     unsigned bw = getSink()->getValue()->getType()->getPrimitiveSizeInBits();
     Range oprnd = source->getRange();
     Range result(Min, Max, Unknown);
@@ -1579,9 +1583,7 @@ void SigmaOp::print(raw_ostream &OS) const {
 BinaryOp::BinaryOp(BasicInterval *intersect, VarNode *sink,
                    const Instruction *inst, VarNode *source1, VarNode *source2,
                    unsigned int opcode)
-        : BasicOp(intersect, sink, inst),
-          source1(source1),
-          source2(source2),
+        : BasicOp(intersect, sink, inst), source1(source1), source2(source2),
           opcode(opcode) { }
 
 /// The dtor.
@@ -1592,6 +1594,7 @@ BinaryOp::~BinaryOp() { }
 /// Basically, this function performs the operation indicated in its opcode
 /// taking as its operands the source1 and the source2.
 Range BinaryOp::eval() const {
+
     Range op1 = this->getSource1()->getRange();
     Range op2 = this->getSource2()->getRange();
     Range result(Min, Max, Unknown);
@@ -1663,7 +1666,8 @@ Range BinaryOp::eval() const {
             result = result.intersectWith(aux);
         }
     } else {
-        if (op1.isEmpty() || op2.isEmpty()) result = Range(Min, Max, Empty);
+        if (op1.isEmpty() || op2.isEmpty())
+            result = Range(Min, Max, Empty);
     }
 
     return result;
@@ -1720,6 +1724,7 @@ void PhiOp::addSource(const VarNode *newsrc) {
 /// The result of evaluating a phi-function is the union of the ranges of
 /// every variable used in the phi.
 Range PhiOp::eval() const {
+
     Range result = this->getSource(0)->getRange();
 
     // Iterate over the sources of the phiop
@@ -1811,6 +1816,7 @@ ConstraintGraph::ConstraintGraph() { this->func = NULL; }
 
 /// The dtor.
 ConstraintGraph::~ConstraintGraph() {
+
     for (VarNodes::iterator vit = vars.begin(), vend = vars.end(); vit != vend;
          ++vit) {
         delete vit->second;
@@ -1917,78 +1923,78 @@ void ConstraintGraph::addUnaryOp(const Instruction *I) {
       Range result;
 
       switch (it->getOpcode()) {
-        case Instruction::Add:
-          constant = cast<ConstantInt>(it->getOperand(1))->getValue();
-          if (constant.getBitWidth() < MAX_BIT_INT) {
-            constant = constant.sext(MAX_BIT_INT);
-          }
+      case Instruction::Add:
+        constant = cast<ConstantInt>(it->getOperand(1))->getValue();
+        if (constant.getBitWidth() < MAX_BIT_INT) {
+          constant = constant.sext(MAX_BIT_INT);
+        }
 
-          if (constant.isStrictlyPositive()) {
-            upper -= constant;
-          } else {
-            lower -= constant;
-          }
+        if (constant.isStrictlyPositive()) {
+          upper -= constant;
+        } else {
+          lower -= constant;
+        }
 
-          UOp = new UnaryOp(new BasicInterval(lower, upper), sink, I, source,
-                            I->getOpcode());
-          break;
+        UOp = new UnaryOp(new BasicInterval(lower, upper), sink, I, source,
+                          I->getOpcode());
+        break;
 
-        case Instruction::Sub:
-          constant = cast<ConstantInt>(it->getOperand(1))->getValue();
-          if (constant.getBitWidth() < MAX_BIT_INT) {
-            constant = constant.sext(MAX_BIT_INT);
-          }
+      case Instruction::Sub:
+        constant = cast<ConstantInt>(it->getOperand(1))->getValue();
+        if (constant.getBitWidth() < MAX_BIT_INT) {
+          constant = constant.sext(MAX_BIT_INT);
+        }
 
-          if (constant.isStrictlyPositive()) {
-            lower += constant;
-          } else {
-            upper += constant;
-          }
+        if (constant.isStrictlyPositive()) {
+          lower += constant;
+        } else {
+          upper += constant;
+        }
 
-          UOp = new UnaryOp(new BasicInterval(lower, upper), sink, I, source,
-                            I->getOpcode());
-          break;
+        UOp = new UnaryOp(new BasicInterval(lower, upper), sink, I, source,
+                          I->getOpcode());
+        break;
 
-        case Instruction::Mul:
-          constant = cast<ConstantInt>(it->getOperand(1))->getValue();
-          if (constant.getBitWidth() < MAX_BIT_INT) {
-            constant = constant.sext(MAX_BIT_INT);
-          }
+      case Instruction::Mul:
+        constant = cast<ConstantInt>(it->getOperand(1))->getValue();
+        if (constant.getBitWidth() < MAX_BIT_INT) {
+          constant = constant.sext(MAX_BIT_INT);
+        }
 
-          candidates[0] = lower.sdiv(constant);
-          candidates[1] = upper.sdiv(constant);
+        candidates[0] = lower.sdiv(constant);
+        candidates[1] = upper.sdiv(constant);
 
-          // Lower bound is the min value from the vector, while upper bound is
-          // the max value
-          if (candidates[1].slt(candidates[0])) {
-            const APInt swap = candidates[0];
-            candidates[0] = candidates[1];
-            candidates[1] = swap;
-          }
+        // Lower bound is the min value from the vector, while upper bound is the
+        // max value
+        if (candidates[1].slt(candidates[0])) {
+          const APInt swap = candidates[0];
+          candidates[0] = candidates[1];
+          candidates[1] = swap;
+        }
 
-          UOp = new UnaryOp(new BasicInterval(candidates[0], candidates[1]), sink,
-                            I, source, I->getOpcode());
-          break;
+        UOp = new UnaryOp(new BasicInterval(candidates[0], candidates[1]), sink,
+                          I, source, I->getOpcode());
+        break;
 
-        case Instruction::Trunc:
-          const TruncInst *trunc = cast<TruncInst>(it);
-          unsigned numbits = trunc->getType()->getPrimitiveSizeInBits();
+      case Instruction::Trunc:
+        const TruncInst *trunc = cast<TruncInst>(it);
+        unsigned numbits = trunc->getType()->getPrimitiveSizeInBits();
 
-          APInt minvalue = APInt::getSignedMinValue(numbits);
-          if (minvalue.getBitWidth() < MAX_BIT_INT) {
-            minvalue = minvalue.sext(MAX_BIT_INT);
-          }
+        APInt minvalue = APInt::getSignedMinValue(numbits);
+        if (minvalue.getBitWidth() < MAX_BIT_INT) {
+          minvalue = minvalue.sext(MAX_BIT_INT);
+        }
 
-          APInt maxvalue = APInt::getSignedMaxValue(numbits);
-          if (maxvalue.getBitWidth() < MAX_BIT_INT) {
-            maxvalue = maxvalue.sext(MAX_BIT_INT);
-          }
+        APInt maxvalue = APInt::getSignedMaxValue(numbits);
+        if (maxvalue.getBitWidth() < MAX_BIT_INT) {
+          maxvalue = maxvalue.sext(MAX_BIT_INT);
+        }
 
-          Range truncInterval(minvalue, maxvalue, Regular);
+        Range truncInterval(minvalue, maxvalue, Regular);
 
-          UOp = new UnaryOp(new BasicInterval(truncInterval), sink, I, source,
-                            I->getOpcode());
-          break;
+        UOp = new UnaryOp(new BasicInterval(truncInterval), sink, I, source,
+                          I->getOpcode());
+        break;
       }
     } else {
       // Create the operation using the intersect to constrain sink's interval.
@@ -2139,6 +2145,7 @@ void ConstraintGraph::addSigmaOp(const PHINode *Sigma) {
    }
    */
 void ConstraintGraph::buildOperations(const Instruction *I) {
+
 #ifdef OVERFLOWHANDLER
     if (I->getName().endswith("_newdef")) {
       addUnaryOp(I);
@@ -2205,7 +2212,8 @@ void ConstraintGraph::buildValueSwitchMap(const SwitchInst *sw) {
     // Handle the rest of cases
     for (SwitchInst::ConstCaseIt CI = sw->case_begin(); CI != sw->case_end();
          CI++) {
-        if (CI == sw->case_default()) continue;
+        if (CI == sw->case_default())
+            continue;
 
         const ConstantInt *constant = CI.getCaseValue();
 
@@ -2242,10 +2250,12 @@ void ConstraintGraph::buildValueSwitchMap(const SwitchInst *sw) {
 
 void ConstraintGraph::buildValueBranchMap(const BranchInst *br) {
     // Verify conditions
-    if (!br->isConditional()) return;
+    if (!br->isConditional())
+        return;
 
     ICmpInst *ici = dyn_cast<ICmpInst>(br->getCondition());
-    if (!ici) return;
+    if (!ici)
+        return;
 
     const Type *op0Type = ici->getOperand(0)->getType();
     const Type *op1Type = ici->getOperand(1)->getType();
@@ -2269,7 +2279,8 @@ void ConstraintGraph::buildValueBranchMap(const BranchInst *br) {
     const Value *variable = NULL;
 
     // If both operands are constants, nothing to do here
-    if (isa<ConstantInt>(Op0) and isa<ConstantInt>(Op1)) return;
+    if (isa<ConstantInt>(Op0) and isa<ConstantInt>(Op1))
+        return;
 
     // Then there are two cases: variable being compared to a constant,
     // or variable being compared to another variable
@@ -2294,9 +2305,10 @@ void ConstraintGraph::buildValueBranchMap(const BranchInst *br) {
         // If the comparison is in the form (var pred const), we use the actual
         // predicate to build the constant range. Otherwise, (const pred var),
         // we use the swapped predicate
-        ConstantRange tmpT = (variable == Op0)
-                             ? ConstantRange::makeICmpRegion(pred, CR)
-                             : ConstantRange::makeICmpRegion(swappred, CR);
+        ConstantRange tmpT =
+                (variable == Op0)
+                ? ConstantRange::makeSatisfyingICmpRegion(pred, CR)
+                : ConstantRange::makeSatisfyingICmpRegion(swappred, CR);
 
         APInt sigMin = tmpT.getSignedMin();
         APInt sigMax = tmpT.getSignedMax();
@@ -2711,6 +2723,7 @@ bool Meet::growth(BasicOp *op, const SmallVector<APInt, 2> *constantvector) {
 /// in the constraint graph, the cropping analysis shrinks these bounds back
 /// to ranges that respect the intersections.
 bool Meet::narrow(BasicOp *op, const SmallVector<APInt, 2> *constantvector) {
+
     APInt oLower = op->getSink()->getRange().getLower();
     APInt oUpper = op->getSink()->getRange().getUpper();
     Range newInterval = op->eval();
@@ -2822,7 +2835,8 @@ void CropDFS::crop(const UseMap &compUseMap, BasicOp *op) {
         const VarNode *sink = V->getSink();
 
         // if the sink has been visited go to the next activeOps
-        if (visitedOps.count(sink)) continue;
+        if (visitedOps.count(sink))
+            continue;
 
         Meet::crop(V, NULL);
         visitedOps.insert(sink);
@@ -2881,7 +2895,8 @@ void ConstraintGraph::update(unsigned nIterations, const UseMap &compUseMap,
             } else
                 --nIterations;
 
-            if (Meet::fixed(*bgn, NULL)) actv.insert((*bgn)->getSink()->getValue());
+            if (Meet::fixed(*bgn, NULL))
+                actv.insert((*bgn)->getSink()->getValue());
         }
     }
 }
@@ -2951,7 +2966,8 @@ void ConstraintGraph::findIntervals() {
 // entryPoints);
 
 #ifdef PRINT_DEBUG
-            if (func) printToFile(*func, "/tmp/" + func->getName() + "cgfixed.dot");
+            if (func)
+              printToFile(*func, "/tmp/" + func->getName() + "cgfixed.dot");
 #endif
 
             // Primeiro iterate till fix point
@@ -2973,7 +2989,8 @@ void ConstraintGraph::findIntervals() {
 
 // printResultIntervals();
 #ifdef PRINT_DEBUG
-            if (func) printToFile(*func, "/tmp/" + func->getName() + "cgint.dot");
+            if (func)
+              printToFile(*func, "/tmp/" + func->getName() + "cgint.dot");
 #endif
 
             // Segundo iterate till fix point
@@ -3019,6 +3036,7 @@ void ConstraintGraph::generateEntryPoints(
                 SigmaOp *defop = dyn_cast<SigmaOp>(bop);
 
                 if (defop && defop->isUnresolved()) {
+
                     defop->getSink()->setRange(bop->eval());
                     defop->markResolved();
                 }
@@ -3056,6 +3074,7 @@ void ConstraintGraph::fixIntersects(SmallPtrSet<VarNode *, 32> &component) {
 void ConstraintGraph::generateActivesVars(
         SmallPtrSet<VarNode *, 32> &component,
         SmallPtrSet<const Value *, 6> &activeVars) {
+
     for (SmallPtrSetIterator<VarNode *> cit = component.begin(),
                  cend = component.end();
          cit != cend; ++cit) {
@@ -3265,8 +3284,8 @@ void ConstraintGraph::computeStats() {
  *operations
  *  where this variable is used.
  */
-UseMap ConstraintGraph::buildUseMap(
-        const SmallPtrSet<VarNode *, 32> &component) {
+UseMap
+ConstraintGraph::buildUseMap(const SmallPtrSet<VarNode *, 32> &component) {
     UseMap compUseMap;
 
     for (SmallPtrSetIterator<VarNode *> vit = component.begin(),
@@ -3406,6 +3425,7 @@ void Nuutila::addControlDependenceEdges(SymbMap *symbMap, UseMap *useMap,
 void Nuutila::delControlDependenceEdges(UseMap *useMap) {
     for (UseMap::iterator it = useMap->begin(), end = useMap->end(); it != end;
          ++it) {
+
         std::deque<ControlDep *> ops;
 
         for (SmallPtrSetIterator<BasicOp *> sit = it->second.begin(),

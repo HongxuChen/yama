@@ -1,5 +1,10 @@
 cmake_minimum_required(VERSION 2.8)
 
+set(LLVM_SUFFIX "-3.7")
+set(CMAKE_C_COMPILER "clang${LLVM_SUFFIX}")
+set(CMAKE_CXX_COMPILER "clang++${LLVM_SUFFIX}")
+
+
 PROJECT(LLVMLearn)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 
@@ -13,6 +18,8 @@ set(MY_LLVM_VERSION "${LLVM_VERSION}")
 setup_package_version_variables(MY_LLVM)
 message(STATUS "MAJOR: ${MY_LLVM_VERSION_MAJOR}")
 message(STATUS "MAJOR: ${MY_LLVM_VERSION_MINOR}")
+
+set(CMAKE_C_COMPILER_ID "Clang")
 
 if ("${CMAKE_GENERATOR}" STREQUAL "Ninja")
     if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")

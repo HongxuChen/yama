@@ -1,23 +1,14 @@
 //===-------------------------- RangeAnalysis.h ---------------------------===//
-//===-----Performs the Range Analysis of the variables of the function-----===//
+//===-----Performs the Range analysis of the variables of the function-----===//
+//
+//					 The LLVM Compiler Infrastructure
+//
+// This file is distributed under the University of Illinois Open Source
+// License. See LICENSE.TXT for details.
 //
 // Copyright (C) 2011-2012, 2015    Victor Hugo Sperle Campos
 //               2011               Douglas do Couto Teixeira
 //               2012               Igor Rafael de Assis Costa
-//
-// This library is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation;
-// version 2.1 of the License.
-//
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-// Lesser General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public
-// License along with this library; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 //
 //===----------------------------------------------------------------------===//
 // This file contains a pass that performs range analysis. The objective of
@@ -84,7 +75,7 @@ using namespace llvm;
 // Uncomment the line below to activate jump-set widening technique
 // It generally leads to better precision in spite of low overhead in
 // running time, so I recommend leaving it activated
-#define JUMPSET
+#define JUMPSETvssa
 
 //#define OVERFLOWHANDLER
 
@@ -94,32 +85,32 @@ using namespace llvm;
 // This option is deprecated. We just used it for testing.
 #define NUMBER_FIXED_ITERATIONS 20
 
-#define PRINTCOMPONENT(component)                                 \
-  errs() << "\n--------------\n";                                 \
-  for (SmallPtrSetIterator<VarNode*> cit = component.begin(),     \
-                                     cend = component.end();      \
-       cit != cend; ++cit) {                                      \
-    const VarNode* var = *cit;                                    \
-    const Value* V = var->getValue();                             \
-    const Argument* A = NULL;                                     \
-    const Instruction* I = NULL;                                  \
-    const ConstantInt* CI = NULL;                                 \
-    if ((A = dyn_cast<Argument>(V))) {                            \
-      errs() << A->getParent()->getName() << "." << A->getName(); \
-    } else if ((I = dyn_cast<Instruction>(V))) {                  \
-      errs() << I->getParent()->getParent()->getName() << "."     \
-             << I->getParent()->getName() << "." << I->getName(); \
-    } else if ((CI = dyn_cast<ConstantInt>(V))) {                 \
-      errs() << CI->getValue();                                   \
-    }                                                             \
-    errs() << "\n";                                               \
-  }                                                               \
+#define PRINTCOMPONENT(component)                                              \
+  errs() << "\n--------------\n";                                              \
+  for (SmallPtrSetIterator<VarNode *> cit = component.begin(),                 \
+                                      cend = component.end();                  \
+       cit != cend; ++cit) {                                                   \
+    const VarNode *var = *cit;                                                 \
+    const Value *V = var->getValue();                                          \
+    const Argument *A = NULL;                                                  \
+    const Instruction *I = NULL;                                               \
+    const ConstantInt *CI = NULL;                                              \
+    if ((A = dyn_cast<Argument>(V))) {                                         \
+      errs() << A->getParent()->getName() << "." << A->getName();              \
+    } else if ((I = dyn_cast<Instruction>(V))) {                               \
+      errs() << I->getParent()->getParent()->getName() << "."                  \
+             << I->getParent()->getName() << "." << I->getName();              \
+    } else if ((CI = dyn_cast<ConstantInt>(V))) {                              \
+      errs() << CI->getValue();                                                \
+    }                                                                          \
+    errs() << "\n";                                                            \
+  }                                                                            \
   errs() << "\n----------\n";
 
 #ifdef SCC_DEBUG
-#define ASSERT(cond, msg)               \
-  if (!cond) {                          \
-    errs() << "ERROR: " << msg << "\n"; \
+#define ASSERT(cond, msg)                                                      \
+  if (!cond) {                                                                 \
+    errs() << "ERROR: " << msg << "\n";                                        \
   }
 #else
 #define ASSERT(cond, msg)
@@ -140,14 +131,10 @@ llvm::raw_fd_ostream _log_file(_log_fileName.str().c_str(), _log_ErrorInfo,
 #define FINISH_LOG
 #endif
 //****************************************************************************//
-static unsigned MAX_BIT_INT = 1;
-static APInt Min = APInt::getSignedMinValue(MAX_BIT_INT);
-static APInt Max = APInt::getSignedMaxValue(MAX_BIT_INT);
-static APInt Zero(MAX_BIT_INT, 0, true);
 
-// extern APInt Min;
-// extern APInt Max;
-// extern APInt Zero;
+extern APInt Min;
+extern APInt Max;
+extern APInt Zero;
 
 /// In our range analysis pass we have to perform operations on ranges all the
 /// time. LLVM has a class to perform operations on ranges: the class
@@ -170,8 +157,8 @@ enum RangeType {
 
 class Range {
 private:
-    APInt l;  // The lower bound of the range.
-    APInt u;  // The upper bound of the range.
+    APInt l; // The lower bound of the range.
+    APInt u; // The upper bound of the range.
     RangeType type;
 
 public:
@@ -315,7 +302,7 @@ public:
 
     BasicInterval();
 
-    virtual ~BasicInterval();  // This is a base class.
+    virtual ~BasicInterval(); // This is a base class.
     // Methods for RTTI
     virtual IntervalId getValueId() const { return BasicIntervalId; }
 
@@ -555,8 +542,7 @@ class PhiOp : public BasicOp {
 private:
     // Vector of sources
     SmallVector<const VarNode *, 2> sources;
-    // The opcode of the operation.
-    unsigned int opcode;
+    unsigned opcode;
 
     /// Computes the interval of the sink based on the interval of the sources,
     /// the operation and the interval associated to the operation.
@@ -831,11 +817,11 @@ typedef DenseMap<const Value *, VarNode *> VarNodes;
 typedef SmallPtrSet<BasicOp *, 64> GenOprs;
 
 // A map from variables to the operations where these variables are used.
-typedef DenseMap<const Value *, SmallPtrSet<BasicOp *, 8> > UseMap;
+typedef DenseMap<const Value *, SmallPtrSet<BasicOp *, 8>> UseMap;
 
 // A map from variables to the operations where these
 // variables are present as bounds
-typedef DenseMap<const Value *, SmallPtrSet<BasicOp *, 8> > SymbMap;
+typedef DenseMap<const Value *, SmallPtrSet<BasicOp *, 8>> SymbMap;
 
 // A map from varnodes to the operation in which this variable is defined
 typedef DenseMap<const Value *, BasicOp *> DefMap;
@@ -1028,9 +1014,9 @@ public:
 #ifdef SCC_DEBUG
     bool checkWorklist();
     bool checkComponents();
-    bool checkTopologicalSort(UseMap* useMap);
-    bool hasEdge(SmallPtrSet<VarNode*, 32>* componentFrom,
-                 SmallPtrSet<VarNode*, 32>* componentTo, UseMap* useMap);
+    bool checkTopologicalSort(UseMap *useMap);
+    bool hasEdge(SmallPtrSet<VarNode *, 32> *componentFrom,
+                 SmallPtrSet<VarNode *, 32> *componentTo, UseMap *useMap);
 #endif
 public:
     Nuutila(VarNodes *varNodes, UseMap *useMap, SymbMap *symbMap,
@@ -1053,6 +1039,7 @@ public:
 };
 
 class Meet {
+
 public:
     static bool widen(BasicOp *op, const SmallVector<APInt, 2> *constantvector);
 
@@ -1094,7 +1081,7 @@ public:
 template<class CGT>
 class InterProceduralRA : public ModulePass, RangeAnalysis {
 public:
-    static char ID;  // Pass identification, replacement for typeid
+    static char ID; // Pass identification, replacement for typeid
     InterProceduralRA() : ModulePass(ID) { CG = NULL; }
 
     ~InterProceduralRA();
@@ -1111,9 +1098,6 @@ public:
 
     virtual Range getRange(const Value *v);
 
-    Pass *createPrinterPass(raw_ostream &O, const std::string &Banner) const override { return nullptr; }
-
-
 private:
     void MatchParametersAndReturnValues(Function &F, ConstraintGraph &G);
 };
@@ -1121,7 +1105,7 @@ private:
 template<class CGT>
 class IntraProceduralRA : public FunctionPass, RangeAnalysis {
 public:
-    static char ID;  // Pass identification, replacement for typeid
+    static char ID; // Pass identification, replacement for typeid
     IntraProceduralRA() : FunctionPass(ID) {
         CG = NULL; /*errs() << "\nIntraProceduralRA ctor";*/
     }
@@ -1137,6 +1121,6 @@ public:
     virtual APInt getMax();
 
     virtual Range getRange(const Value *v);
-};  // end of class RangeAnalysis
+}; // end of class RangeAnalysis
 
 #endif /* LLVM_TRANSFORMS_RANGEANALYSIS_RANGEANALYSIS_H_ */

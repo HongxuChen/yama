@@ -1,24 +1,13 @@
-//===------------------------------ vSSA.h --------------------------------===//
-//===Converts programs into partial Extended Static Single Assignment form-===//
+//===-------------------------- vSSA.h ------------------------------------===//
 //
-// Copyright (C) 2011, 2015    Victor Hugo Sperle Campos
+//					 The LLVM Compiler Infrastructure
 //
-// This library is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation;
-// version 2.1 of the License.
+// This file is distributed under the University of Illinois Open Source
+// License. See LICENSE.TXT for details.
 //
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-// Lesser General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public
-// License along with this library; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
+// Copyright (C) 2011-2012, 2014-2015	Victor Hugo Sperle Campos
 //
 //===----------------------------------------------------------------------===//
-
 #include "llvm/Pass.h"
 #include "llvm/ADT/Statistic.h"
 #include "llvm/IR/Dominators.h"
@@ -34,7 +23,7 @@ namespace llvm {
 
     class vSSA : public FunctionPass {
     public:
-        static char ID;  // Pass identification, replacement for typeid.
+        static char ID; // Pass identification, replacement for typeid.
         vSSA() : FunctionPass(ID) { }
 
         void getAnalysisUsage(AnalysisUsage &AU) const;
@@ -59,16 +48,15 @@ namespace llvm {
 
         void renameUsesToPhi(Value *V, PHINode *phi);
 
-        void insertSigmaAsOperandOfPhis(SmallVector<PHINode *, 25> &vssaphi_created,
-                                        PHINode *sigma);
+        void insertSigmaAsOperandOfPhis(SmallVector<PHINode *, 25> &vssaphi_created, PHINode *sigma);
 
         void populatePhis(SmallVector<PHINode *, 25> &vssaphi_created, Value *V);
 
         bool dominateAny(BasicBlock *BB, Value *value);
 
-        bool dominateOrHasInFrontier(BasicBlock *BB, BasicBlock *BB_next,
-                                     Value *value);
+        bool dominateOrHasInFrontier(BasicBlock *BB, BasicBlock *BB_next, Value *value);
 
         bool verifySigmaExistance(Value *V, BasicBlock *BB, BasicBlock *from);
     };
+
 }
