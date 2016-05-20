@@ -23,21 +23,24 @@
 
 namespace llvm {
 
-class uSSA : public FunctionPass {
- public:
-  static char ID;  // Pass identification, replacement for typeid.
-  uSSA() : FunctionPass(ID) {}
-  void getAnalysisUsage(AnalysisUsage &AU) const;
-  bool runOnFunction(Function &);
+    class uSSA : public FunctionPass {
+    public:
+        static char ID;  // Pass identification, replacement for typeid.
+        uSSA() : FunctionPass(ID) { }
 
-  void createNewDefs(BasicBlock *BB);
-  void renameNewDefs(Instruction *newdef);
+        void getAnalysisUsage(AnalysisUsage &AU) const;
 
- private:
-  // Variables always live
-  DominatorTreeWrapperPass *DT_;
-  DominanceFrontier *DF_;
-};
+        bool runOnFunction(Function &);
+
+        void createNewDefs(BasicBlock *BB);
+
+        void renameNewDefs(Instruction *newdef);
+
+    private:
+        // Variables always live
+        DominatorTreeWrapperPass *DT_;
+        DominanceFrontier *DF_;
+    };
 }
 
 bool getTruncInstrumentation();

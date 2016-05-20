@@ -29,28 +29,38 @@ using namespace llvm;
 
 namespace llvm {
 
-struct RAInstrumentation : public ModulePass {
-  static char ID;
-  RAInstrumentation() : ModulePass(ID){};
+    struct RAInstrumentation : public ModulePass {
+        static char ID;
 
-  void printValueInfo(const Value* V);
-  void MarkAsNotOriginal(Instruction& inst);
-  void PrintInstructionIdentifier(std::string M, std::string F, const Value* V);
+        RAInstrumentation() : ModulePass(ID) { };
 
-  bool IsNotOriginal(Instruction& inst);
-  static bool isValidInst(Instruction* I);
-  virtual bool runOnModule(Module& M);
+        void printValueInfo(const Value *V) { }
 
-  Function& GetSetCurrentMinMaxFunction();
-  Function& GetPrintHashFunction();
-  Instruction* GetNextInstruction(Instruction& i);
-  Constant* strToLLVMConstant(std::string s);
+        void MarkAsNotOriginal(Instruction &inst);
 
-  void InstrumentMainFunction(Function* F, std::string mIdentifier);
+        void PrintInstructionIdentifier(std::string M, std::string F, const Value *V) { }
 
-  Module* module;
-  LLVMContext* context;
-};
+        bool IsNotOriginal(Instruction &inst);
+
+        static bool isValidInst(Instruction *I);
+
+        virtual bool runOnModule(Module &M);
+
+        Function &GetSetCurrentMinMaxFunction();
+
+        Function &GetPrintHashFunction();
+
+        Instruction *GetNextInstruction(Instruction &i);
+
+        Constant *strToLLVMConstant(std::string s);
+
+        Pass *createPrinterPass(raw_ostream &O, const std::string &Banner) const override { return nullptr; }
+
+        void InstrumentMainFunction(Function *F, std::string mIdentifier);
+
+        Module *module;
+        LLVMContext *context;
+    };
 }
 
 #endif /* RAINSTRUMENTATION_H_ */

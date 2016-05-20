@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.8)
 PROJECT(LLVMLearn)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 
-set (CMAKE_EXPORT_COMPILE_COMMANDS 1)
+set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 
 find_package(Llvm REQUIRED)
 add_definitions("${LLVM_CFLAGS}")
@@ -14,11 +14,11 @@ setup_package_version_variables(MY_LLVM)
 message(STATUS "MAJOR: ${MY_LLVM_VERSION_MAJOR}")
 message(STATUS "MAJOR: ${MY_LLVM_VERSION_MINOR}")
 
-if("${CMAKE_GENERATOR}" STREQUAL "Ninja")
-  if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-    add_definitions("-fcolor-diagnostics")
-  endif()
-endif()
+if ("${CMAKE_GENERATOR}" STREQUAL "Ninja")
+    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+        add_definitions("-fcolor-diagnostics")
+    endif ()
+endif ()
 
 set(CMAKE_CXX_FLAGS "-std=c++1y")
 
@@ -36,9 +36,9 @@ set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin)
 set(FULL_LLVM_LIBS ${LLVM_SYSTEM_LIBS} ${LLVM_MODULE_LIBS})
 
 configure_file(
-  ${CMAKE_SOURCE_DIR}/include/Version.hh.in
-  ${CMAKE_BINARY_DIR}/Version.hh
-  )
+        ${CMAKE_SOURCE_DIR}/include/Version.hh.in
+        ${CMAKE_BINARY_DIR}/Version.hh
+)
 
 # set(CMAKE_VERBOSE_MAKEFILE 1)
 

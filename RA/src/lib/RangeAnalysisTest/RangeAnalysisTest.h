@@ -37,14 +37,19 @@
   }
 
 class RangeUnitTest : public ModulePass {
-  unsigned total;
-  unsigned failed;
-  void printStats();
+    unsigned total;
+    unsigned failed;
 
- public:
-  static char ID;  // Pass identification, replacement for typeid
-  RangeUnitTest() : ModulePass(ID), total(0), failed(0) {}
-  bool runOnModule(Module& M);
+    void printStats();
+
+public:
+    static char ID;  // Pass identification, replacement for typeid
+    RangeUnitTest() : ModulePass(ID), total(0), failed(0) { }
+
+    bool runOnModule(Module &M);
+
+    Pass *createPrinterPass(raw_ostream &O, const std::string &Banner) const override { return nullptr; }
+
 };
 
 #endif /* LLVM_TRANSFORMS_RANGEANALYSIS_RANGEANALYSISTESTS_H_ */

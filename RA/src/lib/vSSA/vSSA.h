@@ -32,30 +32,43 @@
 
 namespace llvm {
 
-class vSSA : public FunctionPass {
- public:
-  static char ID;  // Pass identification, replacement for typeid.
-  vSSA() : FunctionPass(ID) {}
-  void getAnalysisUsage(AnalysisUsage &AU) const;
-  bool runOnFunction(Function &);
+    class vSSA : public FunctionPass {
+    public:
+        static char ID;  // Pass identification, replacement for typeid.
+        vSSA() : FunctionPass(ID) { }
 
- private:
-  // Variables always liive
-  DominatorTreeWrapperPass *DTw_;
-  DominatorTree *DT_;
-  DominanceFrontier *DF_;
-  void createSigmasIfNeeded(BasicBlock *BB);
-  void insertSigmas(TerminatorInst *TI, Value *V);
-  void renameUsesToSigma(Value *V, PHINode *sigma);
-  SmallVector<PHINode *, 25> insertPhisForSigma(Value *V, PHINode *sigma);
-  void insertPhisForPhi(Value *V, PHINode *phi);
-  void renameUsesToPhi(Value *V, PHINode *phi);
-  void insertSigmaAsOperandOfPhis(SmallVector<PHINode *, 25> &vssaphi_created,
-                                  PHINode *sigma);
-  void populatePhis(SmallVector<PHINode *, 25> &vssaphi_created, Value *V);
-  bool dominateAny(BasicBlock *BB, Value *value);
-  bool dominateOrHasInFrontier(BasicBlock *BB, BasicBlock *BB_next,
-                               Value *value);
-  bool verifySigmaExistance(Value *V, BasicBlock *BB, BasicBlock *from);
-};
+        void getAnalysisUsage(AnalysisUsage &AU) const;
+
+        bool runOnFunction(Function &);
+
+    private:
+        // Variables always liive
+        DominatorTreeWrapperPass *DTw_;
+        DominatorTree *DT_;
+        DominanceFrontier *DF_;
+
+        void createSigmasIfNeeded(BasicBlock *BB);
+
+        void insertSigmas(TerminatorInst *TI, Value *V);
+
+        void renameUsesToSigma(Value *V, PHINode *sigma);
+
+        SmallVector<PHINode *, 25> insertPhisForSigma(Value *V, PHINode *sigma);
+
+        void insertPhisForPhi(Value *V, PHINode *phi);
+
+        void renameUsesToPhi(Value *V, PHINode *phi);
+
+        void insertSigmaAsOperandOfPhis(SmallVector<PHINode *, 25> &vssaphi_created,
+                                        PHINode *sigma);
+
+        void populatePhis(SmallVector<PHINode *, 25> &vssaphi_created, Value *V);
+
+        bool dominateAny(BasicBlock *BB, Value *value);
+
+        bool dominateOrHasInFrontier(BasicBlock *BB, BasicBlock *BB_next,
+                                     Value *value);
+
+        bool verifySigmaExistance(Value *V, BasicBlock *BB, BasicBlock *from);
+    };
 }
