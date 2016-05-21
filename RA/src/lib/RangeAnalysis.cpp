@@ -12,6 +12,8 @@
 //
 //===----------------------------------------------------------------------===//
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-variable"
 #define DEBUG_TYPE "range-analysis"
 
 #include "RangeAnalysis.h"
@@ -1115,6 +1117,8 @@ Range Range::Or(const Range &other) const {
             u = maxOR(a.getSExtValue(), b.getSExtValue(), c.getSExtValue(),
                       d.getSExtValue());
             break;
+        default:
+            break;
     }
 
     return Range(l, u);
@@ -1127,8 +1131,7 @@ Range Range::Or(const Range &other) const {
 Range Range::Xor(const Range &other) const {
     if (this->isUnknown() || other.isUnknown()) {
         return Range(Min, Max, Unknown);
-    }Couto
-
+    }
     return Range(Min, Max);
 }
 
@@ -1800,7 +1803,7 @@ ValueSwitchMap::ValueSwitchMap(
 ValueSwitchMap::~ValueSwitchMap() { }
 
 void ValueSwitchMap::clear() {
-    for (unsigned i = 0, e = BBsuccs.size(); i < e; ++i) {
+    for (std::size_t i = 0, e = BBsuccs.size(); i < e; ++i) {
         if (BBsuccs[i].first) {
             delete BBsuccs[i].first;
             BBsuccs[i].first = NULL;
@@ -3242,7 +3245,7 @@ void ConstraintGraph::computeStats() {
 
     double totalB = usedBits;
     double needB = needBits;
-    double reduction = (double) (totalB - needB) * 100 / totalB;
+    double reduction = (totalB - needB) * 100 / totalB;
     percentReduction = (unsigned int) reduction;
 
     numVars += this->vars.size();
@@ -3487,7 +3490,7 @@ void Nuutila::visit(Value *V, std::stack<Value *> &stack, UseMap *useMap) {
             visit(name, stack, useMap);
         }
 
-        if ((inComponent.count(name) == false) &&
+        if (inComponent.count(name) == 0 &&
             (dfs[root[V]] >= dfs[root[name]])) {
             root[V] = root[name];
         }
@@ -3688,3 +3691,5 @@ bool Nuutila::checkTopologicalSort(UseMap *useMap) {
   return isConsistent;
 }
 #endif
+
+#pragma clang diagnostic pop

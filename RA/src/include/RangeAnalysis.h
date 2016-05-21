@@ -261,7 +261,7 @@ public:
     /// Returns the range of the variable represented by this node.
     Range getRange() const { return interval; }
 
-    /// Returns the variable represented by this node.
+    /// Returns the variable                                                                                                                                                               represented by this node.
     const Value *getValue() const { return V; }
 
     /// Changes the status of the variable represented by this node.
