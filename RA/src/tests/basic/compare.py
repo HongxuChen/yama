@@ -66,10 +66,10 @@ def check_intervals(crop_fname, cousot_fname):
 
 tests = ['t1.c', 't2.c', 't3.c', 't4.c', 't5.c', 't6.c', 't7.c']
 for test in tests:
-    subprocess.call("./compile.py -ra-intra-crop " + test, shell=True, stdout=open('/tmp/log', "a"),
+    subprocess.call("./single_run.py -ra-intra-crop " + test, shell=True, stdout=open('/tmp/log', "a"),
                     stderr=open('/tmp/log', "a"))
     subprocess.call("cp /tmp/foocgpos.dot /tmp/foocgpos." + test + ".crop.dot", shell=True)
-    subprocess.call("./compile.py -ra-intra-cousot " + test, shell=True, stdout=open('/tmp/log', "a"),
+    subprocess.call("./single_run.py -ra-intra-cousot " + test, shell=True, stdout=open('/tmp/log', "a"),
                     stderr=open('/tmp/log', "a"))
     subprocess.call("cp /tmp/foocgpos.dot /tmp/foocgpos." + test + ".cousot.dot", shell=True)
 
