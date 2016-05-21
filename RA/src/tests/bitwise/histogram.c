@@ -25,7 +25,7 @@
 #include "../../../include/time.h"
 #endif
 
-main() {
+int main() {
     int checksum;
     int cdf, b2;
     int pixels;

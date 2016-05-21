@@ -8,13 +8,13 @@
  * replaced some control flow with logic
  * inlined coder into test code
  * got rid of global variables
- * 
+ *
  * optimized for compiling with -fmacro to muxify if's
  *
  * This version has broken input and initialization data but should give
  * approximately correct hardware cycle counts and area for adpcm
  *
- * stepSizeTable needs to be initialized correctly for true result 
+ * stepSizeTable needs to be initialized correctly for true result
  */
 
 /*
@@ -51,7 +51,7 @@ int stepsizeTable[89] = {
 };
 
 
-main() {
+int main() {
 
     int indexTable[16];
 

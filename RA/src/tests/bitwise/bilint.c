@@ -14,7 +14,9 @@
 #define DWORD      unsigned
 #define LPRGBQWORD unsigned
 
-void main() {
+#include <stdlib.h>
+
+int main() {
     BYTE TextureMap[4][128];
     RGBQWORD ColorLookupTable[4][4];
     DWORD dwUVal;

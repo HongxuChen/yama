@@ -3,10 +3,10 @@
  *  This levdurb filter was taken from Intel's MMX website.
  *
  ***************************************************************************/
-
+#include <stdlib.h>
 #include <limits.h>
 
-void main() {
+int main() {
     long i;
     long m;
     long b[11];

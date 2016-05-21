@@ -8,7 +8,7 @@ int gWidth = 32;
 char gComp[16384];
 char gRef[16384];
 
-void main() {
+int main() {
     int data;
     int i;
     int j;

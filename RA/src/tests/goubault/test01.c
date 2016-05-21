@@ -1,4 +1,4 @@
-void main() {
+int main() {
     int x;
     x = 0;
     while (x < 100) {
