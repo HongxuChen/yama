@@ -1,5 +1,5 @@
 # file(GLOB BASE_FILES RangeAnalysisTest/*.cpp RAPrinter/*.cpp RangeAnalysis/*.cpp ClientRA/*.cpp vSSA/*.cpp uSSA/*.cpp RAInstrumentation/*.cpp RAPrinter) # OverflowDetect/*.cpp)
-file(GLOB BASE_FILES *.cpp) # OverflowDetect/*.cpp)
+file(GLOB BASE_FILES *.cpp)
 
 project(range)
 

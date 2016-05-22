@@ -19,5 +19,5 @@ ${OPT} ${LOAD} -vssa ${BC} -o ${SSA_BC}
 declare -a OPT_ARRARY=(ra-intra-cousot ra-intra-crop ra-inter-cousot ra-inter-crop)
 for PASS in "${OPT_ARRARY[@]}"; do
   echo "===${PASS}==="
-  ${OPT} ${LOAD} -${PASS} ${SSA_BC} -o /dev/null
+  ${OPT} ${LOAD} -${PASS} ${SSA_BC} -o /dev/null  -stats
 done
